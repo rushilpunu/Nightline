@@ -9,7 +9,8 @@ from collections.abc import Sequence
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QApplication
 
-from .camera import NullCameraService
+from .camera.opencv import ThreadedOpenCVCamera
+from .camera.discovery import find_dell_ultrasharp
 from .config import AppConfig
 from .platform import PlatformInfo
 from .ui import MainWindow
@@ -27,9 +28,12 @@ def create_application(
     from .ui.theme import Theme
     Theme.apply(application)
 
+    camera_path = find_dell_ultrasharp() or settings.camera_source
+    camera = ThreadedOpenCVCamera(device_path=camera_path, fps=settings.camera_fps)
+
     window = MainWindow(
         config=settings,
-        camera=NullCameraService(),
+        camera=camera,
         platform=PlatformInfo.current(),
     )
     return application, window
