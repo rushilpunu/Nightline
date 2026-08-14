@@ -2,7 +2,15 @@
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import Protocol, runtime_checkable
+
+
+class CameraState(Enum):
+    DISCONNECTED = "disconnected"
+    CONNECTING = "connecting"
+    CONNECTED = "connected"
+    ERROR = "error"
 
 
 @runtime_checkable
@@ -14,6 +22,11 @@ class CameraService(Protocol):
         """Return whether a camera is ready for use."""
         ...
 
+    @property
+    def health_state(self) -> CameraState:
+        """Return the current health state of the camera."""
+        ...
+
 
 class NullCameraService:
     """Safe placeholder used until camera discovery is implemented."""
@@ -21,3 +34,7 @@ class NullCameraService:
     @property
     def available(self) -> bool:
         return False
+
+    @property
+    def health_state(self) -> CameraState:
+        return CameraState.DISCONNECTED
