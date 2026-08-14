@@ -52,8 +52,14 @@ def find_dell_ultrasharp(sys_path: str = "/sys/class/video4linux") -> Optional[s
                        or None if not found.
     """
     cameras = get_camera_devices(sys_path)
-    for path, name in cameras.items():
-        if "Dell UltraSharp" in name:
+    
+    # Sort keys to ensure we get /dev/video1 before /dev/video3
+    # This avoids selecting metadata nodes.
+    sorted_paths = sorted(cameras.keys(), key=lambda x: int(''.join(filter(str.isdigit, x))) if any(c.isdigit() for c in x) else 0)
+    
+    for path in sorted_paths:
+        name = cameras[path]
+        if "Dell UltraSharp" in name or "Dell Webcam" in name:
             logger.info("Found Dell UltraSharp at %s", path)
             return path
             
