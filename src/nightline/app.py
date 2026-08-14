@@ -24,6 +24,9 @@ def create_application(
     application = QApplication.instance() or QApplication(list(argv or sys.argv))
     application.setApplicationName(settings.name)
 
+    from .ui.theme import Theme
+    Theme.apply(application)
+
     window = MainWindow(
         config=settings,
         camera=NullCameraService(),
