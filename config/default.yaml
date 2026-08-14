@@ -1,0 +1,16 @@
+app:
+  name: "Nightline"
+  log_directory: "/tmp/nightline"
+  show_fps: false
+
+display:
+  width: 800
+  height: 480
+  fullscreen: false
+
+camera:
+  source: 0
+  width: 640
+  height: 480
+  fps: 30
+  reconnect_timing_ms: 5000
