@@ -39,8 +39,8 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self._stack)
 
         # Initialize screens
-        self._home_screen = HomeScreen()
-        self._front_camera_screen = FrontCameraScreen()
+        self._home_screen = HomeScreen(config=config, camera=camera)
+        self._front_camera_screen = FrontCameraScreen(config=config, camera=camera)
 
         self._stack.addWidget(self._home_screen)
         self._stack.addWidget(self._front_camera_screen)
@@ -62,6 +62,10 @@ class MainWindow(QMainWindow):
 
         self._esc_shortcut = QShortcut(QKeySequence("Esc"), self)
         self._esc_shortcut.activated.connect(self._handle_escape)
+        
+        # Start camera capturing immediately so it's ready and there are no duplicate workers
+        if hasattr(self._camera, "start"):
+            self._camera.start()
 
     def _handle_escape(self) -> None:
         """Only allow Escape to quit in windowed mode."""
