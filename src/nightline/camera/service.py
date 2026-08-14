@@ -27,6 +27,10 @@ class CameraService(Protocol):
         """Return the current health state of the camera."""
         ...
 
+    def stop(self) -> None:
+        """Stop the camera service and clean up resources."""
+        ...
+
 
 class NullCameraService:
     """Safe placeholder used until camera discovery is implemented."""
@@ -38,3 +42,6 @@ class NullCameraService:
     @property
     def health_state(self) -> CameraState:
         return CameraState.DISCONNECTED
+
+    def stop(self) -> None:
+        pass

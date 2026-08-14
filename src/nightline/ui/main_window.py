@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QMainWindow, QVBoxLayout, QHBoxLayout, QWidget
+from PySide6.QtGui import QShortcut, QKeySequence, QCloseEvent
+from PySide6.QtWidgets import QMainWindow, QStackedWidget
 
 from ..camera import CameraService
 from ..config import AppConfig
 from ..platform import PlatformInfo
-from .widgets import HudButton, StatusPill
+from .screens import HomeScreen, FrontCameraScreen
 from .theme import Theme
 
 
 class MainWindow(QMainWindow):
-    """Minimal startup window; final product screens belong in later work."""
+    """Stable fullscreen application container and navigation shell."""
 
     def __init__(
         self,
@@ -28,49 +29,47 @@ class MainWindow(QMainWindow):
         self.setWindowTitle(config.name)
         self.resize(config.window_width, config.window_height)
 
-        central_widget = QWidget()
-        layout = QVBoxLayout(central_widget)
-        layout.setContentsMargins(Theme.metrics.spacing_xl, Theme.metrics.spacing_xl, Theme.metrics.spacing_xl, Theme.metrics.spacing_xl)
-        layout.setSpacing(Theme.metrics.spacing_lg)
+        # Apply fullscreen if configured, removing window chrome.
+        if config.fullscreen:
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.Window)
+            self.showFullScreen()
 
-        title = QLabel(f"{config.name} Widget Showcase")
-        title.setFont(Theme.typography.h1)
-        layout.addWidget(title)
+        # Setup stacked widget for screen navigation
+        self._stack = QStackedWidget(self)
+        self.setCentralWidget(self._stack)
 
-        camera_status = "Available" if camera.available else "Not Configured"
-        subtitle = QLabel(f"Platform: {platform.system} | Camera: {camera_status}")
-        subtitle.setFont(Theme.typography.body)
-        subtitle.setStyleSheet(f"color: {Theme.colors.muted_text.name()};")
-        layout.addWidget(subtitle)
+        # Initialize screens
+        self._home_screen = HomeScreen()
+        self._front_camera_screen = FrontCameraScreen()
 
-        # Buttons
-        btn_layout = QHBoxLayout()
-        btn_layout.setSpacing(Theme.metrics.spacing_md)
-        
-        btn_normal = HudButton("Normal Button")
-        btn_layout.addWidget(btn_normal)
+        self._stack.addWidget(self._home_screen)
+        self._stack.addWidget(self._front_camera_screen)
 
-        btn_disabled = HudButton("Disabled Button")
-        btn_disabled.setEnabled(False)
-        btn_layout.addWidget(btn_disabled)
+        # Connect navigation
+        self._home_screen.request_camera_screen.connect(
+            lambda: self._stack.setCurrentWidget(self._front_camera_screen)
+        )
+        self._front_camera_screen.request_home_screen.connect(
+            lambda: self._stack.setCurrentWidget(self._home_screen)
+        )
 
-        layout.addLayout(btn_layout)
+        # Start at home screen
+        self._stack.setCurrentWidget(self._home_screen)
 
-        # Status Pills
-        pill_layout = QHBoxLayout()
-        pill_layout.setSpacing(Theme.metrics.spacing_md)
-        
-        pill_normal = StatusPill("Normal", Theme.colors.accent)
-        pill_layout.addWidget(pill_normal)
+        # Escape path for development (Ctrl+Q always works, Escape only works if not fullscreen kiosk)
+        self._quit_shortcut = QShortcut(QKeySequence("Ctrl+Q"), self)
+        self._quit_shortcut.activated.connect(self.close)
 
-        pill_caution = StatusPill("Caution", Theme.colors.caution)
-        pill_layout.addWidget(pill_caution)
+        self._esc_shortcut = QShortcut(QKeySequence("Esc"), self)
+        self._esc_shortcut.activated.connect(self._handle_escape)
 
-        pill_critical = StatusPill("Critical", Theme.colors.critical)
-        pill_layout.addWidget(pill_critical)
+    def _handle_escape(self) -> None:
+        """Only allow Escape to quit in windowed mode."""
+        if not self.isFullScreen():
+            self.close()
 
-        pill_layout.addStretch()
-        layout.addLayout(pill_layout)
-
-        layout.addStretch()
-        self.setCentralWidget(central_widget)
+    def closeEvent(self, event: QCloseEvent) -> None:
+        """Ensure clean application shutdown."""
+        if hasattr(self._camera, "stop"):
+            self._camera.stop()
+        super().closeEvent(event)
