@@ -6,16 +6,16 @@ from nightline.ui.theme import Theme, ThemeColors, ThemeTypography, ThemeMetrics
 def test_theme_colors_exist():
     assert isinstance(ThemeColors.background, QColor)
     assert isinstance(ThemeColors.accent, QColor)
-    assert ThemeColors.background.name().upper() == "#12161D"
+    assert ThemeColors.background.name().upper() == "#0D1117"
 
 def test_theme_typography():
     assert isinstance(ThemeTypography.h1, QFont)
-    assert ThemeTypography.h1.pointSize() == 32
+    assert ThemeTypography.h1.pointSize() == 21
     assert ThemeTypography.h1.weight() == QFont.Weight.Bold
 
 def test_theme_metrics():
     assert ThemeMetrics.touch_target_min >= 48
-    assert ThemeMetrics.spacing_md == 16
+    assert ThemeMetrics.spacing_md == 10
 
 def test_theme_application(qapp):
     # qapp fixture is provided by pytest-qt or we can use a QApplication instance if running manually.
@@ -23,5 +23,5 @@ def test_theme_application(qapp):
     app = QApplication.instance()
     Theme.apply(app)
     stylesheet = app.styleSheet()
-    assert "background-color: #12161d" in stylesheet.lower()
+    assert "background-color: #0d1117" in stylesheet.lower()
     assert "font-family: \"helvetica neue\"" in stylesheet.lower()

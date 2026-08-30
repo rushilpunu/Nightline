@@ -5,14 +5,16 @@ from PySide6.QtWidgets import QApplication
 
 @dataclass(frozen=True)
 class ThemeColors:
-    background: ClassVar[QColor] = QColor("#12161D")
-    panel: ClassVar[QColor] = QColor("#1B222C")
-    panel2: ClassVar[QColor] = QColor("#242C38")
-    text: ClassVar[QColor] = QColor("#E6E8EC")
-    muted_text: ClassVar[QColor] = QColor("#9AA4B2")
-    accent: ClassVar[QColor] = QColor("#4DA3FF")
-    caution: ClassVar[QColor] = QColor("#F2A93B")
-    critical: ClassVar[QColor] = QColor("#E25555")
+    background: ClassVar[QColor] = QColor("#0D1117")
+    panel: ClassVar[QColor] = QColor("#181E27")
+    panel2: ClassVar[QColor] = QColor("#252D38")
+    text: ClassVar[QColor] = QColor("#F1F3F5")
+    muted_text: ClassVar[QColor] = QColor("#A5AFBA")
+    accent: ClassVar[QColor] = QColor("#3B82C4")
+    safe: ClassVar[QColor] = QColor("#6FA8B8")
+    caution: ClassVar[QColor] = QColor("#D89A3A")
+    critical: ClassVar[QColor] = QColor("#D74C4C")
+    silver: ClassVar[QColor] = QColor("#B8C0C8")
 
 @dataclass(frozen=True)
 class ThemeTypography:
@@ -23,19 +25,19 @@ class ThemeTypography:
         font.setWeight(weight)
         return font
 
-    h1: ClassVar[QFont] = _font(32, QFont.Weight.Bold)
-    h2: ClassVar[QFont] = _font(24, QFont.Weight.Bold)
-    body: ClassVar[QFont] = _font(16, QFont.Weight.Normal)
-    body_bold: ClassVar[QFont] = _font(16, QFont.Weight.Bold)
-    small: ClassVar[QFont] = _font(12, QFont.Weight.Medium)
+    h1: ClassVar[QFont] = _font(21, QFont.Weight.Bold)
+    h2: ClassVar[QFont] = _font(17, QFont.Weight.Bold)
+    body: ClassVar[QFont] = _font(13, QFont.Weight.Normal)
+    body_bold: ClassVar[QFont] = _font(13, QFont.Weight.Bold)
+    small: ClassVar[QFont] = _font(10, QFont.Weight.Medium)
 
 @dataclass(frozen=True)
 class ThemeMetrics:
     spacing_xs: ClassVar[int] = 4
     spacing_sm: ClassVar[int] = 8
-    spacing_md: ClassVar[int] = 16
-    spacing_lg: ClassVar[int] = 24
-    spacing_xl: ClassVar[int] = 32
+    spacing_md: ClassVar[int] = 10
+    spacing_lg: ClassVar[int] = 14
+    spacing_xl: ClassVar[int] = 18
 
     radius_sm: ClassVar[int] = 4
     radius_md: ClassVar[int] = 8
@@ -58,7 +60,7 @@ class Theme:
                 background-color: {cls.colors.background.name()};
                 color: {cls.colors.text.name()};
                 font-family: "Helvetica Neue", sans-serif;
-                font-size: 16pt;
+                font-size: 13pt;
             }}
             QLabel {{
                 background-color: transparent;

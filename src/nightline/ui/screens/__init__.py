@@ -1,6 +1,7 @@
 """Application screens will be added here."""
 
 from .home import HomeScreen
-from .front_camera import FrontCameraScreen
+from .parking import ParkingScreen
+from .info import InfoScreen
 
-__all__ = ["HomeScreen", "FrontCameraScreen"]
+__all__ = ["HomeScreen", "ParkingScreen", "InfoScreen"]

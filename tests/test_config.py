@@ -12,7 +12,7 @@ def test_config_loads_yaml(tmp_path: Path) -> None:
     config_file.write_text("app:\n  name: Test Config\n")
     config = AppConfig.load(config_file)
     assert config.name == "Test Config"
-    assert config.window_width == 800
+    assert config.window_width == 480
 
 
 def test_config_missing_file() -> None:
@@ -48,3 +48,20 @@ def test_config_from_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch
     monkeypatch.setenv("NIGHTLINE_CONFIG", str(config_file))
     config = AppConfig.from_environment()
     assert config.name == "EnvApp"
+
+
+def test_display_environment_override(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    config_file = tmp_path / "env.yaml"
+    config_file.write_text("display:\n  width: 480\n  height: 320\n  fullscreen: true\n")
+    monkeypatch.setenv("NIGHTLINE_WINDOW_WIDTH", "800")
+    monkeypatch.setenv("NIGHTLINE_WINDOW_HEIGHT", "480")
+    monkeypatch.setenv("NIGHTLINE_FULLSCREEN", "false")
+    config = AppConfig.load(config_file)
+    assert (config.window_width, config.window_height, config.fullscreen) == (800, 480, False)
+
+
+def test_parking_threshold_validation(tmp_path: Path) -> None:
+    config_file = tmp_path / "parking.yaml"
+    config_file.write_text("parking:\n  caution_distance_cm: 20\n  critical_distance_cm: 40\n")
+    with pytest.raises(ValueError, match="thresholds"):
+        AppConfig.load(config_file)

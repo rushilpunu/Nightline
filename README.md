@@ -1,9 +1,8 @@
 # Nightline
 
-Nightline is a Raspberry Pi application for a camera-backed display. This
-repository currently contains the maintainable application skeleton: platform
-startup, configuration, camera services, and Qt UI code are kept in separate
-packages so hardware support can be added without coupling it to the screens.
+Nightline is a Raspberry Pi parking display for a 480×320 touchscreen. Its
+sensor-first home and four-front-sensor parking view use a transport-neutral
+provider boundary; realistic simulation is enabled until hardware is selected.
 
 ## UI toolkit
 
@@ -40,6 +39,9 @@ example `DISPLAY=:0`) as appropriate for the Pi's desktop configuration.
 Configuration can be supplied through environment variables; currently
 `NIGHTLINE_APP_NAME`, `NIGHTLINE_WINDOW_WIDTH`, and
 `NIGHTLINE_WINDOW_HEIGHT` are supported.
+
+The production config launches fullscreen at 480×320. For a windowed developer
+run use `NIGHTLINE_FULLSCREEN=false`; width and height may also be overridden.
 
 For a headless startup/clean-shutdown check over SSH, use Qt's offscreen
 backend and the development timeout:

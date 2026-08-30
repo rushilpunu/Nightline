@@ -4,9 +4,18 @@ app:
   show_fps: false
 
 display:
-  width: 800
-  height: 480
-  fullscreen: false
+  width: 480
+  height: 320
+  fullscreen: true
+
+parking:
+  provider: simulated
+  units: cm
+  update_hz: 10
+  freshness_timeout_ms: 750
+  caution_distance_cm: 80
+  critical_distance_cm: 35
+  hysteresis_cm: 5
 
 camera:
   source: 0

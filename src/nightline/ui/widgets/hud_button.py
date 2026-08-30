@@ -8,15 +8,16 @@ from ..theme import Theme
 class HudButton(QPushButton):
     """A large touch-friendly button designed for automotive displays."""
 
-    def __init__(self, text: str, parent: Optional[QWidget] = None) -> None:
+    def __init__(self, text: str, parent: Optional[QWidget] = None, *, compact: bool = False) -> None:
         super().__init__(text, parent)
-        self.setMinimumHeight(Theme.metrics.touch_target_min)
+        self._minimum_touch_height = 44 if compact else Theme.metrics.touch_target_min
+        self.setMinimumHeight(self._minimum_touch_height)
         self.setFont(Theme.typography.body_bold)
         self.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def sizeHint(self) -> QSize:
         hint = super().sizeHint()
-        hint.setHeight(max(hint.height(), Theme.metrics.touch_target_min))
+        hint.setHeight(max(hint.height(), self._minimum_touch_height))
         hint.setWidth(max(hint.width(), Theme.metrics.touch_target_min * 2))
         return hint
 

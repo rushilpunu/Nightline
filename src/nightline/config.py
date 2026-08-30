@@ -10,8 +10,8 @@ from typing import Any, Mapping
 import yaml
 
 DEFAULT_APP_NAME = "Nightline"
-DEFAULT_WINDOW_WIDTH = 800
-DEFAULT_WINDOW_HEIGHT = 480
+DEFAULT_WINDOW_WIDTH = 480
+DEFAULT_WINDOW_HEIGHT = 320
 
 
 def _positive_int(value: Any, default: int, name: str) -> int:
@@ -44,6 +44,14 @@ class AppConfig:
     camera_fps: int = 30
     camera_reconnect_timing_ms: int = 5000
 
+    parking_provider: str = "simulated"
+    parking_units: str = "cm"
+    parking_update_hz: int = 10
+    parking_freshness_timeout_ms: int = 750
+    parking_caution_distance_cm: float = 80.0
+    parking_critical_distance_cm: float = 35.0
+    parking_hysteresis_cm: float = 5.0
+
     @classmethod
     def load(cls, config_path: str | Path | None = None) -> "AppConfig":
         """Load configuration from YAML file and arguments."""
@@ -72,6 +80,9 @@ class AppConfig:
         camera_data = data.get("camera") or {}
         if not isinstance(camera_data, dict):
             camera_data = {}
+        parking_data = data.get("parking") or {}
+        if not isinstance(parking_data, dict):
+            parking_data = {}
 
         name = str(app_data.get("name", DEFAULT_APP_NAME)).strip()
         if not name:
@@ -80,9 +91,19 @@ class AppConfig:
         log_directory = str(app_data.get("log_directory", "/tmp/nightline"))
         show_fps = bool(app_data.get("show_fps", False))
 
-        window_width = _positive_int(display_data.get("width"), DEFAULT_WINDOW_WIDTH, "Display width")
-        window_height = _positive_int(display_data.get("height"), DEFAULT_WINDOW_HEIGHT, "Display height")
-        fullscreen = bool(display_data.get("fullscreen", False))
+        window_width = _positive_int(
+            os.environ.get("NIGHTLINE_WINDOW_WIDTH", display_data.get("width")),
+            DEFAULT_WINDOW_WIDTH, "Display width",
+        )
+        window_height = _positive_int(
+            os.environ.get("NIGHTLINE_WINDOW_HEIGHT", display_data.get("height")),
+            DEFAULT_WINDOW_HEIGHT, "Display height",
+        )
+        fullscreen_value = os.environ.get("NIGHTLINE_FULLSCREEN", display_data.get("fullscreen", False))
+        if isinstance(fullscreen_value, str):
+            fullscreen = fullscreen_value.strip().lower() in {"1", "true", "yes", "on"}
+        else:
+            fullscreen = bool(fullscreen_value)
 
         source = camera_data.get("source", 0)
         if not isinstance(source, (int, str)):
@@ -92,6 +113,25 @@ class AppConfig:
         camera_height = _positive_int(camera_data.get("height"), 480, "Camera height")
         camera_fps = _positive_int(camera_data.get("fps"), 30, "Camera FPS")
         camera_reconnect_timing_ms = _positive_int(camera_data.get("reconnect_timing_ms"), 5000, "Camera reconnect timing")
+
+        parking_provider = str(parking_data.get("provider", "simulated")).strip().lower()
+        if parking_provider != "simulated":
+            raise ValueError("Parking provider must be 'simulated' until hardware is configured")
+        parking_units = str(parking_data.get("units", "cm")).strip().lower()
+        if parking_units != "cm":
+            raise ValueError("Parking units must be 'cm'")
+        parking_update_hz = _positive_int(parking_data.get("update_hz"), 10, "Parking update rate")
+        parking_freshness_timeout_ms = _positive_int(
+            parking_data.get("freshness_timeout_ms"), 750, "Parking freshness timeout"
+        )
+        try:
+            caution = float(parking_data.get("caution_distance_cm", 80))
+            critical = float(parking_data.get("critical_distance_cm", 35))
+            hysteresis = float(parking_data.get("hysteresis_cm", 5))
+        except (TypeError, ValueError) as error:
+            raise ValueError("Parking distance thresholds must be numbers") from error
+        if critical <= 0 or caution <= critical or hysteresis < 0:
+            raise ValueError("Parking thresholds must satisfy 0 < critical < caution and hysteresis >= 0")
 
         return cls(
             name=name,
@@ -105,6 +145,13 @@ class AppConfig:
             camera_height=camera_height,
             camera_fps=camera_fps,
             camera_reconnect_timing_ms=camera_reconnect_timing_ms,
+            parking_provider=parking_provider,
+            parking_units=parking_units,
+            parking_update_hz=parking_update_hz,
+            parking_freshness_timeout_ms=parking_freshness_timeout_ms,
+            parking_caution_distance_cm=caution,
+            parking_critical_distance_cm=critical,
+            parking_hysteresis_cm=hysteresis,
         )
 
     @classmethod

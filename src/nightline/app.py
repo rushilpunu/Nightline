@@ -12,6 +12,7 @@ from PySide6.QtWidgets import QApplication
 from .camera import NullCameraService
 from .config import AppConfig
 from .platform import PlatformInfo
+from .sensors import SimulatedParkingProvider
 from .ui import MainWindow
 
 
@@ -31,6 +32,10 @@ def create_application(
         config=settings,
         camera=NullCameraService(),
         platform=PlatformInfo.current(),
+        parking_provider=SimulatedParkingProvider(
+            update_hz=settings.parking_update_hz,
+            freshness_timeout_ms=settings.parking_freshness_timeout_ms,
+        ),
     )
     return application, window
 
